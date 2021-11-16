@@ -189,12 +189,77 @@ public class Server extends UnicastRemoteObject implements RMI {
         return id;
     }
 
+    @Override
+    public List<GaModel> findAllGa() throws RemoteException {
+        List<GaModel> gas = new ArrayList<>();
+        conn = AbstractDB.getConnection();
+
+        String sql = "select * from Ga;";
+        try {
+            ps =conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                GaModel ga = new GaModel(rs.getInt("gid"),rs.getString("tenGa"));
+                gas.add(ga);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (rs != null && st != null && conn != null) {
+                try {
+                    rs.close();
+                    st.close();
+                    conn.close();
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        return gas;
+    }
+
+    @Override
+    public List<TauModel> findTauByGa(int i) throws RemoteException {
+        List<TauModel> taus = new ArrayList<>();
+        conn = AbstractDB.getConnection();
+
+        String sql = "select * from Tau inner join LichTrinh where lichTrinh=lid and id_ga="+i+"";
+        try {
+            ps =conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                TauModel tau = new TauModel(rs.getInt("taiid"),
+                        rs.getString("tenTau"),
+                        rs.getInt("soToa"),
+                        new LichTrinhModel(rs.getInt("lid"),
+                                rs.getString("ngayDi"),
+                                rs.getString("ngayDen")),rs.getInt("id_ga"));
+                taus.add(tau);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (rs != null && st != null && conn != null) {
+                try {
+                    rs.close();
+                    st.close();
+                    conn.close();
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        return taus;
+    }
+
     public static void main(String[] args) {
 //        try {
 //            Server sv = new Server();
-//            List<ToaModel> list= sv.findAllToa();
-//            for (ToaModel item : list){
-//                System.out.println(item.getSoGhe());
+//            List<GaModel> list= sv.findAllGa();
+//            for (GaModel item : list){
+//                System.out.println(item.getName());
 //            }
 //        } catch (RemoteException e) {
 //            e.printStackTrace();
